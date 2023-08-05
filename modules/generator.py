@@ -38,7 +38,8 @@ class Generator:
             random.shuffle(nums)
             freezed_is_ok: bool = True
             for freezed_number in self.freezed_nums:
-                if nums.index(freezed_number) != freezed_number - 1:
+                if ((freezed_number in nums) and
+                   (nums.index(freezed_number) != freezed_number - 1)):
                     freezed_is_ok = False
             if (nums not in num_combos) and freezed_is_ok:
                 num_combos.append(list(nums))
