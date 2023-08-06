@@ -3,6 +3,7 @@ from PyQt6 import QtWidgets
 from pandas import DataFrame
 import time
 import sys
+import os
 
 
 class Application(QtWidgets.QMainWindow, design.Ui_Dialog):
@@ -25,34 +26,38 @@ class Application(QtWidgets.QMainWindow, design.Ui_Dialog):
                                           .replace(' ', '').split(',')]
         except ValueError:
             freezed_numbers: list = []
+        auto_open_file: bool = self.checkBox.isChecked()
         return (photo_count, combo_count, prefix_name,
-                freezed_numbers)
+                freezed_numbers, auto_open_file)
 
     def generate_data(self) -> DataFrame:
         """Метод, отвечающий за генерацию данных.
         Использует данные из элементов PyQt, полученных в методе
         get_data(). Возвращает сгенерированные данные."""
         (photo_count, combo_count, prefix_name,
-         freezed_numbers) = self.get_data()
+         freezed_numbers, auto_open_file) = self.get_data()
 
         GEN: generator = generator.Generator(photo_count, combo_count,
                                              prefix_name, freezed_numbers)
 
-        return DataFrame(GEN.generate_cells())
+        return DataFrame(GEN.generate_cells()), auto_open_file
 
     def save_data(self) -> None:
         """Метод, отвечающий за сохранение данных.
         Получает данные путем вызова метода generate_data(),
         после чего сохраняет их в .xlsx файл, присваивая
         уникальное значение с текущим временем."""
-        data_to_save: DataFrame = self.generate_data()
-        current_time: str = time.strftime('%d-%m-%y %H-%M-%S',
+        data_to_save, auto_open_file = self.generate_data()
+        current_time: str = time.strftime('%d-%m-%y_%H-%M-%S',
                                           time.localtime())
-        file_name: str = f'generated_data/Data {current_time}.xlsx'
+        file_name: str = f'generated_data/Data_{current_time}.xlsx'
         try:
             data_to_save.to_excel(file_name, sheet_name='Data', index=False)
-            QtWidgets.QMessageBox.about(self, 'Успешно',
-                                        f'Сохранено в файл: {file_name}')
+            if auto_open_file:
+                os.system(f'open {file_name}')
+            else:
+                QtWidgets.QMessageBox.about(self, 'Успешно',
+                                            f'Сохранено в файл: {file_name}')
         except OSError:
             QtWidgets.QMessageBox.about(self, 'Ошибка',
                                         'Невозможно создать файл. Проверьте '
