@@ -50,11 +50,11 @@ class Application(QtWidgets.QMainWindow, design.Ui_Dialog):
         data_to_save, auto_open_file = self.generate_data()
         current_time: str = time.strftime('%d-%m-%y_%H-%M-%S',
                                           time.localtime())
-        file_name: str = f'generated_data/Data_{current_time}.xlsx'
+        file_name: str = f'Data_{current_time}.xlsx'
         try:
             data_to_save.to_excel(file_name, sheet_name='Data', index=False)
             if auto_open_file:
-                os.system(f'open {file_name}')
+                os.startfile(file_name)
             else:
                 QtWidgets.QMessageBox.about(self, 'Успешно',
                                             f'Сохранено в файл: {file_name}')
