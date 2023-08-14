@@ -1,6 +1,8 @@
 from modules import design, generator
 from PyQt6 import QtWidgets
 from pandas import DataFrame
+import subprocess
+import platform
 import time
 import sys
 import os
@@ -50,12 +52,30 @@ class Application(QtWidgets.QMainWindow, design.Ui_Dialog):
         data_to_save, auto_open_file = self.generate_data()
         current_time: str = time.strftime('%d-%m-%y_%H-%M-%S',
                                           time.localtime())
-        file_name: str = f'Data_{current_time}.xlsx'
         try:
-            data_to_save.to_excel(file_name, sheet_name='Data', index=False)
             if auto_open_file:
-                os.startfile(file_name)
+
+                if platform.system() == 'Darwin':       # macOS
+                    file_name: str = f'generated_data/Data_{current_time}.xlsx'
+                    data_to_save.to_excel(file_name, sheet_name='Data',
+                                          index=False)
+                    os.system(f'open {file_name}')
+
+                elif platform.system() == 'Windows':    # Windows
+                    file_name: str = f'Data_{current_time}.xlsx'
+                    data_to_save.to_excel(file_name, sheet_name='Data',
+                                          index=False)
+                    os.startfile(file_name)
+
+                else:                                   # linux variants
+                    file_name: str = f'generated_data/Data_{current_time}.xlsx'
+                    data_to_save.to_excel(file_name, sheet_name='Data',
+                                          index=False)
+                    subprocess.call(('xdg-open', file_name))
             else:
+                file_name: str = f'generated_data/Data_{current_time}.xlsx'
+                data_to_save.to_excel(file_name, sheet_name='Data',
+                                      index=False)
                 QtWidgets.QMessageBox.about(self, 'Успешно',
                                             f'Сохранено в файл: {file_name}')
         except OSError:
